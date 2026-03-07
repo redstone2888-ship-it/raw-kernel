@@ -1,3 +1,10 @@
+/*
+ * panic.c - kernel error output
+ * 
+ * (c) 2026, Redstone2888
+ * Read LICENSE.txt for details
+*/
+
 #include <vga.h>
 #include <unistd.h>
 #include <asm.h>

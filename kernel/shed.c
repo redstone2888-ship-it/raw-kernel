@@ -1,11 +1,24 @@
+/*
+ * shed.c — Simple task scheduler for
+ *
+ * (c) 2026, Redstone2888
+ * Read LICENSE.txt for details
+ *
+ * Handles:
+ * - Task management
+ * - Task switching
+ * - Adding/killing tasks
+ */
+
 #include <shed.h>
 #include <asm.h>
 #include <shell.h>
-#include <FAT12.h>  // для memory_buffer
+#include <FAT12.h>
 
 task_t tasks[MAX_TASKS];
 int current_task = 0;
 
+// Initialize scheduler and start the shell
 void shed_init() {
     for (int i = 0; i < MAX_TASKS; i++) {
         tasks[i].pid = i;
@@ -24,7 +37,7 @@ void shed_init() {
     }
 }
 
-// добавить функцию как задачу
+// Add a function as a new task
 int shed_add(void (*fn)(), const char* name) {
     for (int i = 0; i < MAX_TASKS; i++) {
         if (tasks[i].state == TASK_DEAD) {
@@ -42,31 +55,13 @@ int shed_add(void (*fn)(), const char* name) {
     return -1;
 }
 
-// добавить бинарник из FAT12
-int shed_add_binary(const char* name, uint8_t* buf, size_t size) {
-    for (int i = 0; i < MAX_TASKS; i++) {
-        if (tasks[i].state == TASK_DEAD) {
-            tasks[i].entry = 0;
-            tasks[i].state = TASK_READY;
-            tasks[i].program = buf;
-            tasks[i].size = size;
-            if (name) {
-                for (int j = 0; j < 16 && name[j]; j++)
-                    tasks[i].name[j] = name[j];
-            }
-            // TODO: выделить отдельный стек для бинарника, если нужно
-            return tasks[i].pid;
-        }
-    }
-    return -1;
-}
-
+// Kill a task by PID
 void shed_kill(int pid) {
     if (pid < 0 || pid >= MAX_TASKS) return;
     tasks[pid].state = TASK_DEAD;
 }
 
-// переключение задач
+// Switch to the next READY task
 void shed_yield() {
     int start = current_task;
     do {
@@ -83,23 +78,15 @@ void shed_yield() {
             return;
         }
     } while (current_task != start);
-    hlt();
+    hlt(); // halt CPU if no ready tasks
 }
 
+// Called by shed_init or task loops to switch tasks
 void shed_tick() {
     shed_yield();
 }
 
-void run_program(uint8_t* buf, size_t size) {
-    if (!buf || size == 0)
-        return;
-
-    // кастинг бинарника в функцию и вызов
-    void (*prog)() = (void(*)())buf;
-
-    prog(); // вызываем "бинарник" как функцию
-}
-
+// Convert task state enum to string
 const char* state_to_string(task_state_t state) {
     switch(state) {
         case TASK_DEAD: return "DEAD";
