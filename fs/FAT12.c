@@ -1,27 +1,43 @@
+/*
+ * FAT12.c — Simple FAT12 filesystem driver
+ *
+ * (c) 2026, Redstone2888
+ * Read LICENSE.txt for details
+ *
+ * Handles reading files from a 1.44MB floppy disk image:
+ * - Reads the FAT table
+ * - Reads the root directory
+ * - Finds files by name/extension
+ * - Reads file clusters into memory
+ *
+ * DO NOT DELETE this file — the kernel will return a NO_MODULES_FOUND error. 
+ * However, you can remove the lines in kernel.c that are responsible for this.
+ */
+
 #include <FAT12.h>
 
-// массивы для хранения
-uint8_t fat_table[SECTOR_SIZE*9];     // если FAT12 9 секторов
-dir_entry_t root_dir[224];            // максимум записей в root
-uint8_t* disk_image;          // 1.44MB образ флоппи
-uint8_t memory_buffer[MAX_FILE_SIZE]; // куда читаем файл
+// Storage structures
+uint8_t fat_table[SECTOR_SIZE*9];
+dir_entry_t root_dir[224];
+uint8_t* disk_image;
+uint8_t memory_buffer[MAX_FILE_SIZE];
 
-// читаем FAT (начиная с сектора 1)
+// Read FAT table from disk
 void read_fat() {
     for (int i = 0; i < 9; i++) {
         read_sector(1 + i, fat_table + i*SECTOR_SIZE);
     }
 }
 
-// читаем root directory (14 секторов)
+// Read root directory from disk
 void read_root_dir() {
-    int root_start = 1 + 9*2; // boot + 2 FAT по 9 секторов
+    int root_start = 1 + 9*2;
     for (int i = 0; i < 14; i++) {
         read_sector(root_start + i, ((uint8_t*)root_dir) + i*SECTOR_SIZE);
     }
 }
 
-// ищем файл в корне (8 символов имя, без расширения)
+// Find a file in the root directory
 dir_entry_t* find_file(const char* name, const char* ext) {
     for (int i = 0; i < 224; i++) {
         int match = 1;
@@ -34,7 +50,7 @@ dir_entry_t* find_file(const char* name, const char* ext) {
     return 0;
 }
 
-// читаем цепочку кластеров файла в buf
+// Read a file from the disk into a buffer
 void read_file(dir_entry_t* entry, uint8_t* buf, int buf_size) {
     uint16_t cluster = entry->first_cluster_lo;
     int offset = 0;
@@ -56,7 +72,7 @@ void read_file(dir_entry_t* entry, uint8_t* buf, int buf_size) {
     }
 }
 
-// читаем сектор из disk_image
+// Read a single sector from disk image
 void read_sector(int sector_number, uint8_t* buffer) {
     uint32_t offset = sector_number * SECTOR_SIZE;
     for (int i = 0; i < SECTOR_SIZE; i++) {
