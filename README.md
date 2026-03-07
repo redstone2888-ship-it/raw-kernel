@@ -55,9 +55,10 @@ make run
 3. Commit and push your changes  
 4. Open a pull request describing your changes  
 
-# Issues / Questiond
+# Issues / Questions
 
 Use the **Issues** tab on **GitHub** to report bugs or suggest improvements.  
 
+# License
 
-## Have a good day!
+This project is licensed under the MIT License. See the `LICENSE.txt` file for details.  
