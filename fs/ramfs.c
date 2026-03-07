@@ -1,4 +1,4 @@
-#include <vga.h>
+/*#include <vga.h>
 #include <panic.h>
 #include <string.h>
 
@@ -63,4 +63,4 @@ void fs_cat(const char* name) {
 
     print_text(f->data);
     putchar('\n');
-}
+}*/

@@ -47,7 +47,7 @@ void test_ui_task() {
     }
 
     sleep(2);
-    kernel_panic("0xTROLL", "HEHE_TROLLED");
+    panic("HEHE_TROLLED");
     while (1) hlt();
 }
 
@@ -67,44 +67,11 @@ void shell() {
         if (!strcmp(argv[0], "clear")) {
             clear_screen();
         }
-        else if (!strcmp(argv[0], "ls")) {
-            for (int i = 0; i < 224; i++) {
-                if (root_dir[i].name[0] != 0) { // непустая запись
-                    println("%c%c%c%c%c%c%c%c.%c%c%c",
-                        root_dir[i].name[0], root_dir[i].name[1],
-                        root_dir[i].name[2], root_dir[i].name[3],
-                        root_dir[i].name[4], root_dir[i].name[5],
-                        root_dir[i].name[6], root_dir[i].name[7],
-                        root_dir[i].ext[0], root_dir[i].ext[1],
-                        root_dir[i].ext[2]);
-                }
-            }
-        }
-        else if (!strcmp(argv[0], "cat") && argc > 1) {
-            dir_entry_t* entry = find_file(argv[1]);
-            if (entry) {
-                read_file(entry, memory_buffer);
-                println("%s", memory_buffer);
-            } else {
-                println("File not found");
-            }
-        }
 
         // ----- GUI -----
         else if (!strcmp(argv[0], "gui")) {
             shed_add(gui, "gui");
             shed_tick();
-        }
-
-        // ----- FAT12 запуск бинарника -----
-        else if (!strcmp(argv[0], "run") && argc > 1) {
-            dir_entry_t* entry = find_file(argv[1]);
-            if (entry) {
-                read_file(entry, memory_buffer);
-                shed_add_binary(argv[1], memory_buffer, entry->size);
-            } else {
-                println("File not found");
-            }
         }
 
         else if (!strcmp(argv[0], "kill")) {

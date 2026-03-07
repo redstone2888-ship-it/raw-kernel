@@ -1,12 +1,11 @@
 /* linker.ld */
-ENTRY(kernel_main)
+ENTRY(_start)
 
 SECTIONS {
     . = 1M;
-
-    /* Multiboot header должен быть в первых 8KB */
-    .text BLOCK(4K) : ALIGN(4K) {
-        *(.multiboot)
+    
+    .text : {
+        KEEP(*(.multiboot))
         *(.text)
     }
     

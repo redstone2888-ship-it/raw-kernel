@@ -11,7 +11,7 @@ void kraw_syscall(int cmd) {
             break;
         case KRAW_CMD_POWER_OFF:
             outb(0x604, 0x2000);
-            kernel_panic("0x1498SNS", "SHUTDOWN_NOT_SUCCEFUL\n\n if you want to shutdown your PC, hold PC's power button");
+            panic("SHUTDOWN_NOT_SUCCEFUL");
             break;
         default:
             println("syscall: unknown syscall");
