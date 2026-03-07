@@ -35,6 +35,25 @@ make
 make run
 ```
 
+# **NEW!** Building a disk.img
+
+**WARNING!** The kernel requires `disk.img`; without it, it will return the `NO_MODULES_FOUND` error. However, you can comment out lines 48-50 to ignore this error.  
+
+You can create one like this:
+```bash
+# Create a empty image:
+dd if=/dev/zero of=disk.img bs=512 count=2880
+
+# Format it as FAT12
+mkfs.fat -F 12 disk.img
+
+# Optional: mount it and add files
+mkdir /tmp/build
+sudo mount -o loop disk.img /tmp/build
+cp your_files /tmp/build
+sudo umount /tmp/build
+```
+
 # Repository Structure
 
 `boot/` - To boot correctly via GRUB.  
