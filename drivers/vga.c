@@ -1,15 +1,31 @@
+/*
+ * vga.c - The VGA text mode driver
+ * 
+ * Copyright (c) 2026, Redstone2888
+ * Read LICENSE.txt for details
+ * 
+ * Handles screen output in text mode:
+ *  - Printing characters and strings
+ *  - Cursor movement
+ *  - Screen scrolling
+ *  - Clearing the screen
+ * 
+ * Not recommended to delete - the kernel not be able to dispay text/chars 
+ * to screen.
+ */
+
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 #define VGA_MEMORY 0xB8000
 
-/* Current cursor position */
+// Current cursor position
 int cursor_x = 0;
 int cursor_y = 0;
-unsigned char color = 0x0F; /* White on black */
+unsigned char color = 0x0F; // White on black
 
 #include <stdarg.h>
 
-// putchar уже есть
+// putchar prototype
 void putchar(char c); 
 
 void print_text(const char* str) {
@@ -19,7 +35,7 @@ void print_text(const char* str) {
     }
 }
 
-// itoa для чисел
+// itoa for nums
 void itoa(int n, char* buf) {
     int i = 0;
     int is_negative = 0;
@@ -32,6 +48,7 @@ void itoa(int n, char* buf) {
     buf[i] = 0;
 }
 
+// Experimental function
 void printf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -57,12 +74,12 @@ void printf(const char* fmt, ...) {
     va_end(args);
 }
 
-// println с форматированием
+// println with formating
 void println(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    // делаем почти то же самое, что vga_printf, но добавляем '\n'
+    // Everything is the same as printf, but we add '\n'
     char buf[32];
     const char* p = fmt;
     while (*p) {
@@ -86,7 +103,7 @@ void println(const char* fmt, ...) {
     va_end(args);
 }
 
-/* Clear the entire screen */
+// Clear the entire screen
 void clear_screen(void) {
     volatile unsigned short* vga = (unsigned short*)VGA_MEMORY;
 
@@ -154,17 +171,3 @@ void putchar(char c) {
 
     move_cursor();
 }
-
-void printf_v(const char* fmt, int value) {
-    while (*fmt) {
-        if (*fmt == '%' && *(fmt+1) == 'v') {
-            char buf[12];
-            itoa(value, buf);
-            print_text(buf);
-            fmt += 2;
-        } else {
-            putchar(*fmt++);
-        }
-    }
-}
-

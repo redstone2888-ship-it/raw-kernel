@@ -1,3 +1,18 @@
+/*
+ * keyboard.c - The keyboard driver
+ * Copyright (c) 2026, Redstone2888
+ * Read LICENSE.txt for details
+ * 
+ * This file contains keyboard input for kernel:
+ *  - Getting key
+ *  - Reading line
+ * 
+ * Without this file, the kernel will not be able 
+ * to read keyboard.
+ * 
+ * Not recommended to delete.
+ */
+
 #include <vga.h>
 #include <keyboard.h>
 #include <asm.h>
@@ -10,7 +25,6 @@ char keymap[128] = {
     0,'\\','z','x','c','v','b','n','m',',','.','/',0,0,0,' '
 };
 
-// reading key
 unsigned char inb(unsigned short port) {
     unsigned char ret;
     __asm__ __volatile__("inb %1, %0" : "=a"(ret) : "Nd" (port));
@@ -33,6 +47,7 @@ char getkey() {
     }
 }
 
+// reading line
 void readline(char* buf, int max) {
     int i = 0;
 
