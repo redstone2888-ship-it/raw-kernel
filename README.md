@@ -5,7 +5,7 @@ Experimental **operating system kernel** written in C/ASM for learning purposes.
 # Overview
 
 Raw-Kernel is a minimal kernel, designed to understand how low-level OS components work: booting, memory management, interrupts, and basic drivers.  
-This project is purely educational — it’s not meant for production use.
+This project is purely educational — it's not meant for production use.
 
 # Features
 
@@ -13,7 +13,8 @@ This project is purely educational — it’s not meant for production use.
 - Basic task scheduling
 - Interrupt handling
 - VGA text output
-- FAT12 reading support
+- FAT12 read/write support (via ATA PIO driver)
+- Built-in shell with `ls`, `cat`, `write`, `rm`, `color`, `ps`, `kill`
 
 # Build Instructions
 
@@ -24,47 +25,80 @@ git clone https://github.com/redstone2888-ship-it/raw-kernel.git
 cd raw-kernel
 ```
 
-2. Build the kernel:
+2. Create a blank FAT12 disk image (only needed once):
+```bash
+make disk.img
+```
+
+3. Build the kernel:
 ```bash
 make
 ```
 
-3. Run:
-**Important:** Do not run kernel directly with `-kernel`, it must loaded via GRUB.  
+4. Run in QEMU:
 ```bash
 make run
 ```
 
-# **NEW!** Building a disk.img
+> **Note:** Do not run the kernel directly with `-kernel` — it must be loaded via GRUB.
 
-**WARNING!** The kernel requires `disk.img`; without it, it will return the `NO_MODULES_FOUND` error. However, you can comment out lines 48-50 to ignore this error.  
+# Disk Image
 
-You can create one like this:
+`disk.img` is a 1.44MB FAT12 floppy image connected to QEMU as a second IDE drive. The kernel reads and writes it directly via ATA PIO — changes made inside the shell persist on disk.
+
+## Managing disk.img from your host (macOS / Linux)
+
+Use the included `rawdisk.py` utility — no dependencies, pure Python:
+
 ```bash
-# Create a empty image:
-dd if=/dev/zero of=disk.img bs=512 count=2880
+# List files
+python3 rawdisk.py disk.img ls
 
-# Format it as FAT12
-mkfs.fat -F 12 disk.img
+# Show free space
+python3 rawdisk.py disk.img info
 
-# Optional: mount it and add files
-mkdir /tmp/build
-sudo mount -o loop disk.img /tmp/build
-cp your_files /tmp/build
-sudo umount /tmp/build
+# Inject a file from your host into the image
+python3 rawdisk.py disk.img put notes.txt
+
+# Extract a file from the image to your host
+python3 rawdisk.py disk.img get NOTES.TXT
+
+# Print file contents
+python3 rawdisk.py disk.img cat NOTES.TXT
+
+# Delete a file
+python3 rawdisk.py disk.img rm NOTES.TXT
 ```
+
+This means you can write files inside the kernel, then pull them out on your Mac — or inject files from your Mac and read them inside the kernel.
+
+# Shell Commands
+
+| Command | Description |
+|---|---|
+| `ls` | List files on disk |
+| `cat NAME.EXT` | Print file contents |
+| `write NAME.EXT text` | Write text to a file |
+| `rm NAME.EXT` | Delete a file |
+| `color FG BG` | Change text color (0–15) |
+| `ps` | List running tasks |
+| `kill PID` | Kill a task |
+| `clear` | Clear screen |
+| `reboot` | Reboot system |
+| `shutdown` | Power off |
+| `help` | Show all commands |
 
 # Repository Structure
 
-`boot/` - To boot correctly via GRUB.  
-`drivers/` - Drivers for screen and keyboard.  
-`fs/` - File system drivers.  
-`include/` - Include lib files. **Tip:** use `#include <{FILE_IN_INCLUDE_FOLDER}>`.  
-`kernel/` - Main kernel files.  
-`lib/` - Other lib files.  
-`disk.img` - Optional, you can build it yourself.  
-`linker.ld` - **Do not edit**, this is for proper `.iso` build.  
-`Makefile` - For building.  
+`boot/` - GRUB bootloader entry point.  
+`drivers/` - VGA, keyboard, and ATA PIO drivers.  
+`fs/` - FAT12 filesystem driver.  
+`include/` - Header files. **Tip:** use `#include <filename>`.  
+`kernel/` - Main kernel, shell, scheduler, panic handler.  
+`lib/` - String utils, syscalls.  
+`rawdisk.py` - Host-side disk utility for managing `disk.img`.  
+`linker.ld` - **Do not edit** — required for proper `.iso` build.  
+`Makefile` - Build system.  
 
 # Contributing
 
