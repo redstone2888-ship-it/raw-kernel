@@ -42,8 +42,7 @@ iso: $(KERNEL)
 $(ISO): iso
 
 run: $(ISO) disk.img
-	qemu-system-i386 -cdrom $(ISO) -m 256M -serial stdio \
-	  -drive file=disk.img,format=raw,if=ide,index=1
+	qemu-system-i386 -drive file=disk.img,format=raw,if=ide,index=0 -drive file=myos.iso,format=raw,if=ide,index=1,media=cdrom -m 256M -boot d
 
 # Create a blank FAT12 floppy image if it does not exist
 disk.img:
