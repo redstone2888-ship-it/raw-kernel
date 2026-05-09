@@ -73,8 +73,6 @@ void shed_yield() {
 
             if (tasks[current_task].entry)
                 tasks[current_task].entry();
-            else if (tasks[current_task].program)
-                run_program(tasks[current_task].program, tasks[current_task].size);
 
             return;
         }
