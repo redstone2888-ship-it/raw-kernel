@@ -26,25 +26,29 @@ boot/boot.o: boot/boot.s
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-iso: $(KERNEL) disk.img
+iso: $(KERNEL)
 	rm -rf iso
 	mkdir -p iso/boot/grub
 	cp $(KERNEL) iso/boot/
-	cp disk.img iso/boot/
 
 	echo 'set timeout=0' > iso/boot/grub/grub.cfg
 	echo 'set default=0' >> iso/boot/grub/grub.cfg
 	echo 'menuentry "RawOS" {' >> iso/boot/grub/grub.cfg
 	echo '  multiboot /boot/kernel.bin' >> iso/boot/grub/grub.cfg
-	echo '  module /boot/disk.img' >> iso/boot/grub/grub.cfg
 	echo '}' >> iso/boot/grub/grub.cfg
 
 	i686-elf-grub-mkrescue -o $(ISO) iso
 
 $(ISO): iso
 
-run: $(ISO)
-	qemu-system-i386 -cdrom $(ISO) -m 256M -serial stdio
+run: $(ISO) disk.img
+	qemu-system-i386 -cdrom $(ISO) -m 256M -serial stdio \
+	  -drive file=disk.img,format=raw,if=ide,index=1
+
+# Create a blank FAT12 floppy image if it does not exist
+disk.img:
+	dd if=/dev/zero of=disk.img bs=512 count=2880
+	mkfs.fat -F 12 disk.img
 
 clean:
 	rm -rf $(OBJ) $(KERNEL) $(ISO) iso

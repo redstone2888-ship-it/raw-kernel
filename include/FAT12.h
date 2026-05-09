@@ -15,7 +15,6 @@ typedef struct {
 } dir_entry_t;
 
 extern dir_entry_t root_dir[224];
-extern uint8_t* disk_image;
 extern uint8_t memory_buffer[MAX_FILE_SIZE];
 
 void read_fat();

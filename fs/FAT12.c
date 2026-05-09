@@ -15,11 +15,11 @@
  */
 
 #include <FAT12.h>
+#include <ata.h>
 
 // Storage structures
 uint8_t fat_table[SECTOR_SIZE*9];
 dir_entry_t root_dir[224];
-uint8_t* disk_image;
 uint8_t memory_buffer[MAX_FILE_SIZE];
 
 // Read FAT table from disk
@@ -72,20 +72,14 @@ void read_file(dir_entry_t* entry, uint8_t* buf, int buf_size) {
     }
 }
 
-// Read a single sector from disk image
+// Read a single sector via ATA PIO
 void read_sector(int sector_number, uint8_t* buffer) {
-    uint32_t offset = sector_number * SECTOR_SIZE;
-    for (int i = 0; i < SECTOR_SIZE; i++) {
-        buffer[i] = disk_image[offset + i];
-    }
+    ata_read_sector((uint32_t)sector_number, buffer);
 }
 
-// Write a single sector back to disk image
+// Write a single sector via ATA PIO
 void write_sector(int sector_number, uint8_t* buffer) {
-    uint32_t offset = sector_number * SECTOR_SIZE;
-    for (int i = 0; i < SECTOR_SIZE; i++) {
-        disk_image[offset + i] = buffer[i];
-    }
+    ata_write_sector((uint32_t)sector_number, buffer);
 }
 
 // Flush FAT table (both copies) back to disk
