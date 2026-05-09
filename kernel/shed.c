@@ -14,6 +14,7 @@
 #include <asm.h>
 #include <shell.h>
 #include <FAT12.h>
+#include <programs.h>
 
 task_t tasks[MAX_TASKS];
 int current_task = 0;
