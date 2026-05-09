@@ -111,6 +111,7 @@ void shell() {
                 }
                 ext[3] = 0;
 
+                to_upper(name); to_upper(ext);
                 dir_entry_t* entry = find_file(name, ext);
                 if (!entry) {
                     print_text("cat: file not found\n");
@@ -158,6 +159,7 @@ void shell() {
                 }
                 memory_buffer[pos++] = '\n';
 
+                to_upper(name); to_upper(ext);
                 dir_entry_t* entry = find_file(name, ext);
                 if (!entry) entry = create_file(name, ext);
                 if (!entry) {
@@ -193,6 +195,7 @@ void shell() {
                 }
                 ext[3] = 0;
 
+                to_upper(name); to_upper(ext);
                 dir_entry_t* entry = find_file(name, ext);
                 if (!entry) {
                     print_text("rm: file not found\n");

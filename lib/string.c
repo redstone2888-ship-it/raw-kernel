@@ -58,3 +58,11 @@ int atoi(const char* str) {
 
     return res * sign;
 }
+
+// Convert string to uppercase in-place
+void to_upper(char* s) {
+    while (*s) {
+        if (*s >= 'a' && *s <= 'z') *s -= 32;
+        s++;
+    }
+}
