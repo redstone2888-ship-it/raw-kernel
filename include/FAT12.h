@@ -23,3 +23,14 @@ void read_root_dir();
 dir_entry_t* find_file(const char* name, const char* ext);
 void read_file(dir_entry_t* entry, uint8_t* buf, int buf_size);
 void read_sector(int sector_number, uint8_t* buffer);
+
+// Write support
+void write_sector(int sector_number, uint8_t* buffer);
+void write_fat();
+void write_root_dir();
+uint16_t fat_get_cluster(uint16_t cluster);
+void fat_set_cluster(uint16_t cluster, uint16_t value);
+uint16_t fat_alloc_cluster();
+void fat_free_chain(uint16_t start);
+int write_file(dir_entry_t* entry, uint8_t* buf, uint32_t size);
+dir_entry_t* create_file(const char* name, const char* ext);

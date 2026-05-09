@@ -127,7 +127,86 @@ void shell() {
             }
         }
 
-        // Change text color: color FG BG (0-15 each)
+        // Write text to a file: write NAME.EXT some text here
+        else if (!strcmp(argv[0], "write")) {
+            if (argc < 3) {
+                print_text("Usage: write NAME.EXT text...\n");
+            } else {
+                char name[9] = "        ";
+                char ext[4]  = "   ";
+                char* arg = argv[1];
+                char* dot = 0;
+                for (int i = 0; arg[i]; i++)
+                    if (arg[i] == '.') { dot = arg + i; break; }
+                int ni = 0;
+                char* p = arg;
+                while (*p && *p != '.' && ni < 8) name[ni++] = *p++;
+                name[8] = 0;
+                if (dot) {
+                    dot++;
+                    for (int i = 0; i < 3 && dot[i]; i++) ext[i] = dot[i];
+                }
+                ext[3] = 0;
+
+                uint32_t pos = 0;
+                for (int i = 2; i < argc && pos < MAX_FILE_SIZE - 2; i++) {
+                    char* word = argv[i];
+                    while (*word && pos < MAX_FILE_SIZE - 2)
+                        memory_buffer[pos++] = *word++;
+                    if (i + 1 < argc && pos < MAX_FILE_SIZE - 2)
+                        memory_buffer[pos++] = ' ';
+                }
+                memory_buffer[pos++] = '\n';
+
+                dir_entry_t* entry = find_file(name, ext);
+                if (!entry) entry = create_file(name, ext);
+                if (!entry) {
+                    print_text("write: root directory full\n");
+                } else {
+                    int r = write_file(entry, memory_buffer, pos);
+                    if (r == 0)
+                        print_text("OK\n");
+                    else
+                        print_text("write: disk full\n");
+                }
+            }
+        }
+
+        // Delete a file: rm NAME.EXT
+        else if (!strcmp(argv[0], "rm")) {
+            if (argc < 2) {
+                print_text("Usage: rm NAME.EXT\n");
+            } else {
+                char name[9] = "        ";
+                char ext[4]  = "   ";
+                char* arg = argv[1];
+                char* dot = 0;
+                for (int i = 0; arg[i]; i++)
+                    if (arg[i] == '.') { dot = arg + i; break; }
+                int ni = 0;
+                char* p = arg;
+                while (*p && *p != '.' && ni < 8) name[ni++] = *p++;
+                name[8] = 0;
+                if (dot) {
+                    dot++;
+                    for (int i = 0; i < 3 && dot[i]; i++) ext[i] = dot[i];
+                }
+                ext[3] = 0;
+
+                dir_entry_t* entry = find_file(name, ext);
+                if (!entry) {
+                    print_text("rm: file not found\n");
+                } else {
+                    fat_free_chain(entry->first_cluster_lo);
+                    entry->name[0] = (char)0xE5;
+                    write_fat();
+                    write_root_dir();
+                    print_text("OK\n");
+                }
+            }
+        }
+
+                // Change text color: color FG BG (0-15 each)
         else if (!strcmp(argv[0], "color")) {
             if (argc < 3) {
                 print_text("Usage: color FG BG  (0-15 each)\n");
@@ -152,6 +231,8 @@ void shell() {
             print_text("Commands:\n");
             print_text("  ls            - list files on disk\n");
             print_text("  cat NAME.EXT  - print file contents\n");
+            print_text("  write NAME.EXT text - write text to file\n");
+            print_text("  rm NAME.EXT   - delete a file\n");
             print_text("  color FG BG   - change text color (0-15)\n");
             print_text("  ps            - list tasks\n");
             print_text("  kill PID      - kill a task\n");
